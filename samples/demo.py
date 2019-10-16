@@ -1,12 +1,13 @@
 import os
 import sys
+import random
 import math
-import time
 import numpy as np
 import skimage.io
 import matplotlib
 import matplotlib.pyplot as plt
 from os.path import exists, join, basename
+import time
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../")
@@ -71,13 +72,6 @@ class_names = ['BG', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
 
 
 
-
-
-
-
-
-
-
 def label_image(image_file):
     image = skimage.io.imread(image_file)
     t = time.time()
@@ -94,8 +88,7 @@ def label_image(image_file):
 
 
 file_names = next(os.walk(IMAGE_DIR))[2]
-random_file_name = random.choice(file_names)
+image_file = join(IMAGE_DIR, random.choice(file_names))
 
-full_image_file = join(IMAGE_DIR, random_file_name)
 
-label_image(full_image_file)
+label_image(image_file)
