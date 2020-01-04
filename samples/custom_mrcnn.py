@@ -8,15 +8,15 @@ import matplotlib
 import matplotlib.pyplot as plt
 from os.path import exists, join, basename
 import time
+from mrcnn import utils
+import mrcnn.model as modellib
+from mrcnn import visualize
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../")
 
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
-from mrcnn import utils
-import mrcnn.model as modellib
-from mrcnn import visualize
 # Import COCO config
 sys.path.append(join(ROOT_DIR, "samples/coco/"))  # To find local version
 import coco
@@ -32,8 +32,6 @@ COCO_MODEL_PATH = join(ROOT_DIR, "mask_rcnn_coco.h5")
 if not exists(COCO_MODEL_PATH):
     utils.download_trained_weights(COCO_MODEL_PATH)
 
-# Directory of images to run detection on
-IMAGE_DIR = join(ROOT_DIR, "images")
 
 
 class InferenceConfig(coco.CocoConfig):
@@ -43,7 +41,7 @@ class InferenceConfig(coco.CocoConfig):
     IMAGES_PER_GPU = 1
 
 config = InferenceConfig()
-config.display()
+# config.display()
 
 # Create model object in inference mode.
 model = modellib.MaskRCNN(mode="inference", model_dir=MODEL_DIR, config=config)
@@ -72,23 +70,22 @@ class_names = ['BG', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
 
 
 
-def label_image(image_file):
-    image = skimage.io.imread(image_file)
-    t = time.time()
+def label_image(image_files, show_plot):
+    images = []
+    for image_file in image_files:
+        image = skimage.io.imread(image_file) 
 
-    # Run detection
-    results = model.detect([image], verbose=1)
-    print("executed in %.3fs" % (time.time() - t))
+        t = time.time()
+        # Run detection
+        results = model.detect([image], verbose=0)
+        print("executed in %.3fs" % (time.time() - t))
 
-    # Visualize results
-    r = results[0]
+        r = results[0]
+        print(image_file, r['rois'],  r['class_ids'])
 
-    visualize.display_instances(image, r['rois'], r['masks'], r['class_ids'], 
-                                class_names, r['scores'])
+        # Visualize results
+        if show_plot:
+            visualize.display_instances(image, r['rois'], r['masks'], r['class_ids'], 
+                                    class_names, r['scores'])
 
-
-file_names = next(os.walk(IMAGE_DIR))[2]
-image_file = join(IMAGE_DIR, random.choice(file_names))
-
-
-label_image(image_file)
+    
